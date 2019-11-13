@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"flag"
 	"strings"
+	"path"
+	"bytes"
 	"gopkg.in/russross/blackfriday.v2"
 	"text/template"
 )
@@ -81,6 +83,8 @@ func main() {
 	// get locations and read list of files
 	inputLocation := parseDirectoryFromUserInput(*optionInputDir)
 	outputLocation := parseDirectoryFromUserInput(*optionOutputDir)
+	indexTemplateLocation := parseDirectoryFromUserInput(*optionIndexTemplateFilename)
+	pageTemplateLocation := parseDirectoryFromUserInput(*optionPageTemplateFilename)
 
 	fmt.Printf("Reading from directory: %s\n", inputLocation)
 
@@ -89,7 +93,16 @@ func main() {
 	handleErr(&err, fmt.Sprintf("Couldn't read the input files from %v", inputLocation), true)
 
 	// generate templates
-	indexTemplate, err := template.New("index").Parse()
+	indexContents, err := ioutil.ReadFile(indexTemplateLocation)
+	handleErr(&err, "Couldn't read the index template file", true)
+	indexTemplate, err := template.New("index").Parse(string(indexContents))
+	handleErr(&err, "Couldn't parse the index template file", true)
+
+
+	pageContents, err := ioutil.ReadFile(pageTemplateLocation)
+	handleErr(&err, "Couldn't read the page template file", true)
+	pageTemplate, err := template.New("page").Parse(string(pageContents))
+	handleErr(&err, "Couldn't parse the page template file", true)
 
 	// parse contents into pages from template
 	for _, file := range inputFiles {
@@ -97,9 +110,21 @@ func main() {
 
 		fmt.Printf("Processing file: %s\n", file.Name())
 		fileContents, err := ioutil.ReadFile(inputLocation + file.Name());
-		handleErr(&err, fmt.Sprintf("Failed to load %v", file.Name()), true)
+		handleErr(&err, fmt.Sprintf("Failed to load: %v", file.Name()), true)
 
 		entry := parseMeta(string(fileContents))
+
+		var generatedPage bytes.Buffer
+		err = pageTemplate.Execute(&generatedPage, entry)
+		handleErr(&err, fmt.Sprintf("Failed to parse into template: %v", file.Name()), true)
+
+		writeLocation := outputLocation + strings.TrimSuffix(file.Name(), path.Ext(file.Name()))
+		ioutil.WriteFile(writeLocation, generatedPage.Bytes(), 0644)
 	}
+
+	var generatedIndex bytes.Buffer
+	err = indexTemplate.Execute(&generatedIndex, []byte("Test index hello"))
+	handleErr(&err, "Failed to parse index page", true)
+	ioutil.WriteFile(outputLocation + "index.html", generatedIndex.Bytes(), 0644)
 
 }
