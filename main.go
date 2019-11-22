@@ -13,7 +13,7 @@ import (
 )
 
 type Entry struct {
-	Body	[]byte
+	Body	string
 	Meta	map[string]interface{}
 }
 
@@ -30,7 +30,7 @@ func parseMeta(content string) Entry {
 	byLine := strings.Split(content, "\n")
 	// if there is no metadata, just return an Entry with the Body
 	if byLine[0] != "---" {
-		return Entry{blackfriday.Run([]byte(content)), nil}
+		return Entry{string(blackfriday.Run([]byte(content))), nil}
 	}
 	// read off metadata
 	var entry Entry
@@ -49,14 +49,17 @@ func parseMeta(content string) Entry {
 	}
 
 	remainingText := strings.TrimSpace(strings.Join(byLine[index:], "\n"))
-	entry.Body = blackfriday.Run([]byte(remainingText))
+	entry.Body = string(blackfriday.Run([]byte(remainingText)))
 
 	return entry
 }
 
-func parseDirectoryFromUserInput(userInput string) string {
+func parseDirectoryFromUserInput(userInput string, isFile bool) string {
 	pwd, err := os.Getwd()
 	handleErr(&err, "Couldn't get current working directory", true)
+
+	pwd += "/"
+	if !isFile { userInput += "/"}
 	
 	if userInput == "" {
 		return pwd
@@ -81,12 +84,19 @@ func main() {
 	flag.Parse()
 
 	// get locations and read list of files
-	inputLocation := parseDirectoryFromUserInput(*optionInputDir)
-	outputLocation := parseDirectoryFromUserInput(*optionOutputDir)
-	indexTemplateLocation := parseDirectoryFromUserInput(*optionIndexTemplateFilename)
-	pageTemplateLocation := parseDirectoryFromUserInput(*optionPageTemplateFilename)
+	inputLocation := parseDirectoryFromUserInput(*optionInputDir, false)
+	outputLocation := parseDirectoryFromUserInput(*optionOutputDir, false)
+	indexTemplateLocation := parseDirectoryFromUserInput(*optionIndexTemplateFilename, true)
+	pageTemplateLocation := parseDirectoryFromUserInput(*optionPageTemplateFilename, true)
 
-	fmt.Printf("Reading from directory: %s\n", inputLocation)
+	fmt.Printf("Read posts from directory: %s\n", inputLocation)
+	fmt.Printf("Output posts to directory: %s\n", outputLocation)
+
+	if _, err := os.Stat(outputLocation); err != nil {
+		fmt.Printf("Note: Output directory does not exist. Creating now...\n")
+		err = os.MkdirAll(outputLocation, os.ModePerm)
+		handleErr(&err, "Couldn't create the output directory", true)
+	}
 
 	var inputFiles []os.FileInfo
 	inputFiles, err := ioutil.ReadDir(inputLocation)
@@ -97,7 +107,6 @@ func main() {
 	handleErr(&err, "Couldn't read the index template file", true)
 	indexTemplate, err := template.New("index").Parse(string(indexContents))
 	handleErr(&err, "Couldn't parse the index template file", true)
-
 
 	pageContents, err := ioutil.ReadFile(pageTemplateLocation)
 	handleErr(&err, "Couldn't read the page template file", true)
@@ -118,7 +127,7 @@ func main() {
 		err = pageTemplate.Execute(&generatedPage, entry)
 		handleErr(&err, fmt.Sprintf("Failed to parse into template: %v", file.Name()), true)
 
-		writeLocation := outputLocation + strings.TrimSuffix(file.Name(), path.Ext(file.Name()))
+		writeLocation := outputLocation + strings.TrimSuffix(file.Name(), path.Ext(file.Name())) + ".html"
 		ioutil.WriteFile(writeLocation, generatedPage.Bytes(), 0644)
 	}
 
@@ -126,5 +135,4 @@ func main() {
 	err = indexTemplate.Execute(&generatedIndex, []byte("Test index hello"))
 	handleErr(&err, "Failed to parse index page", true)
 	ioutil.WriteFile(outputLocation + "index.html", generatedIndex.Bytes(), 0644)
-
 }
