@@ -1,1 +1,8 @@
-THIS DOESN'T MATTER
+<div>This is my blog</div>
+<div>
+    <ul>
+        {{range .Entries}}
+            <li><a href="{{.URL}}">{{.Meta.Title}}</a></li>
+        {{end}}
+    </ul>
+</div>

@@ -1,20 +1,27 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"io/ioutil"
-	"flag"
-	"strings"
-	"path"
 	"bytes"
+	"flag"
+	"fmt"
 	"gopkg.in/russross/blackfriday.v2"
+	"io/ioutil"
+	"os"
+	"path"
+	"strings"
 	"text/template"
 )
 
+// Entry is a blog post entry
 type Entry struct {
-	Body	string
-	Meta	map[string]interface{}
+	Body string
+	Meta map[string]interface{}
+	URL  string
+}
+
+// IndexData is a list of entries
+type IndexData struct {
+	Entries []Entry
 }
 
 func handleErr(err *error, message string, doPanic bool) {
@@ -26,30 +33,40 @@ func handleErr(err *error, message string, doPanic bool) {
 	}
 }
 
-func parseMeta(content string) Entry {
+func parseMeta(content, fileName string) Entry {
 	byLine := strings.Split(content, "\n")
 	// if there is no metadata, just return an Entry with the Body
 	if byLine[0] != "---" {
-		return Entry{string(blackfriday.Run([]byte(content))), nil}
+		return Entry{string(blackfriday.Run([]byte(content))), nil, ""}
 	}
 	// read off metadata
 	var entry Entry
+	entry.Meta = make(map[string]interface{})
 
-	var index int
+	var indexCount int
 	for index, line := range byLine {
-		if index == 0 { continue }
-		if line == "---" { break }
+		if index == 0 {
+			continue
+		}
+		if line == "---" {
+			break
+		}
 		lineContents := strings.Split(line, ":")
-		if len(lineContents) < 2 { panic("^ ^ File's meta is formatted wrong, please view") }
+		if len(lineContents) < 2 {
+			panic("^ ^ File's meta is formatted wrong, please view")
+		}
 
 		metaName := strings.TrimSpace(lineContents[0])
 		metaContent := strings.TrimSpace(strings.Join(lineContents[1:], ""))
 
-		entry.Meta[metaName] = metaContent;
+		entry.Meta[metaName] = metaContent
+		indexCount++
 	}
 
-	remainingText := strings.TrimSpace(strings.Join(byLine[index:], "\n"))
+	remainingText := strings.TrimSpace(strings.Join(byLine[indexCount:], "\n"))
 	entry.Body = string(blackfriday.Run([]byte(remainingText)))
+
+	entry.URL = "/" + fileName
 
 	return entry
 }
@@ -59,8 +76,10 @@ func parseDirectoryFromUserInput(userInput string, isFile bool) string {
 	handleErr(&err, "Couldn't get current working directory", true)
 
 	pwd += "/"
-	if !isFile { userInput += "/"}
-	
+	if !isFile {
+		userInput += "/"
+	}
+
 	if userInput == "" {
 		return pwd
 	} else if string((userInput)[0]) == "/" {
@@ -113,26 +132,42 @@ func main() {
 	pageTemplate, err := template.New("page").Parse(string(pageContents))
 	handleErr(&err, "Couldn't parse the page template file", true)
 
+	// initialize metadata to use for index page
+	var pages []Entry
+
 	// parse contents into pages from template
 	for _, file := range inputFiles {
-		if file.IsDir() { continue }
+		if file.IsDir() {
+			continue
+		}
+
+		var outputPath string = outputLocation + strings.TrimSuffix(file.Name(), path.Ext(file.Name()))
+		var outputFileName string = fmt.Sprintf("%s/index.html", outputPath)
+		var outputURL string = fmt.Sprintf("%s/index.html", strings.TrimSuffix(file.Name(), path.Ext(file.Name())))
 
 		fmt.Printf("Processing file: %s\n", file.Name())
-		fileContents, err := ioutil.ReadFile(inputLocation + file.Name());
+		fileContents, err := ioutil.ReadFile(inputLocation + file.Name())
 		handleErr(&err, fmt.Sprintf("Failed to load: %v", file.Name()), true)
 
-		entry := parseMeta(string(fileContents))
+		entry := parseMeta(string(fileContents), outputURL)
+		pages = append(pages, entry)
 
 		var generatedPage bytes.Buffer
 		err = pageTemplate.Execute(&generatedPage, entry)
 		handleErr(&err, fmt.Sprintf("Failed to parse into template: %v", file.Name()), true)
 
-		writeLocation := outputLocation + strings.TrimSuffix(file.Name(), path.Ext(file.Name())) + ".html"
+		err = os.MkdirAll(outputPath, os.ModePerm)
+		handleErr(&err, "Couldn't create the output directory", true)
+
+		writeLocation := outputFileName
+		fmt.Printf("Write location: %s", writeLocation)
 		ioutil.WriteFile(writeLocation, generatedPage.Bytes(), 0644)
 	}
 
+	// parse contents into index from template
+
 	var generatedIndex bytes.Buffer
-	err = indexTemplate.Execute(&generatedIndex, []byte("Test index hello"))
+	err = indexTemplate.Execute(&generatedIndex, IndexData{pages})
 	handleErr(&err, "Failed to parse index page", true)
-	ioutil.WriteFile(outputLocation + "index.html", generatedIndex.Bytes(), 0644)
+	ioutil.WriteFile(outputLocation+"index.html", generatedIndex.Bytes(), 0644)
 }
