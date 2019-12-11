@@ -43,7 +43,7 @@ func parseMeta(content, fileName string) Entry {
 	var entry Entry
 	entry.Meta = make(map[string]interface{})
 
-	var indexCount int
+	var indexCount int = 1
 	for index, line := range byLine {
 		if index == 0 {
 			continue
@@ -160,7 +160,6 @@ func main() {
 		handleErr(&err, "Couldn't create the output directory", true)
 
 		writeLocation := outputFileName
-		fmt.Printf("Write location: %s", writeLocation)
 		ioutil.WriteFile(writeLocation, generatedPage.Bytes(), 0644)
 	}
 
