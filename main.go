@@ -43,8 +43,9 @@ func parseMeta(content, fileName string) Entry {
 	var entry Entry
 	entry.Meta = make(map[string]interface{})
 
-	var indexCount int = 1
+	var indexCount int = 0
 	for index, line := range byLine {
+		indexCount++
 		if index == 0 {
 			continue
 		}
@@ -60,7 +61,6 @@ func parseMeta(content, fileName string) Entry {
 		metaContent := strings.TrimSpace(strings.Join(lineContents[1:], ""))
 
 		entry.Meta[metaName] = metaContent
-		indexCount++
 	}
 
 	remainingText := strings.TrimSpace(strings.Join(byLine[indexCount:], "\n"))

@@ -1,10 +1,107 @@
-<div>This is my blog</div>
-<div>
-    <ul>
-        
-            <li><a href="/first/index.html">Hello, title</a></li>
-        
-            <li><a href="/second/index.html">Here is another sample post</a></li>
-        
-    </ul>
-</div>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Jacob Kania</title>
+    <style>
+        .page {
+            max-width: 1024px;
+            margin-top: 0;
+            margin-left: auto;
+            margin-right: auto;
+            background-color: #eedddd
+        }
+
+        .container {
+            background-color: white;
+        }
+
+        .header {
+            text-align: center;
+            background-color: red;
+            padding-bottom: 0.5rem;
+        }
+
+        .header > .name {
+            font-size: 2rem;
+        }
+
+        .header > .link {
+            margin-right: 1rem;
+            margin-left: 1rem;
+        }
+
+        .header > .link > a {
+            font-weight: 600;
+            color: white;
+        }
+
+        .content {
+            padding: 1rem;
+        }
+
+        .introduction {
+            margin-bottom: 1rem;
+        }
+
+        .most-recent-posts-list {
+            display: table;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .item-date {
+            font-family: monospace;
+            width: 6rem;
+        }
+
+        .post-list-item-row {
+            display: table-row;
+            text-decoration: none;
+            color: black;
+        }
+
+        .post-list-item-row > div {
+            display: table-cell;
+            padding: 0.15rem 0;
+        }
+
+        .conclusion {
+            margin-top: 1rem;
+            text-align: center;
+            padding-top: 0.5rem;
+            border-top: 4px solid red;
+        }
+    </style>
+</head>
+<body class="page">
+    <div class="container">
+        <div class="header">
+            <div class="name">
+                <Link to="/">Jacob Kania</Link>
+            </div>
+            <div class="links">
+                <span class="link"><a href="https://github.com/jacobkania">LinkedIn</a></span>
+            </div>
+        </div>
+        <div class="content">
+            <div class="introduction">Hey! I'm Jacob. I write about things that I think are interesting, which tends to vary a lot</div >
+            <div class="most-recent-posts-list">
+                
+                <a href="/first/index.html" class="post-list-item-row">
+                        <div class="item-date">2019-12-01</div>
+                        <div class="item-title">Hello, title</div>
+                </a>
+                
+                <a href="/second/index.html" class="post-list-item-row">
+                        <div class="item-date">2019-12-04</div>
+                        <div class="item-title">Here is another sample post</div>
+                </a>
+                
+            </div>
+            <div class="conclusion">
+                © 2020 Jacob Kania
+            </div>
+        </div>
+    </div>
+</body>
+</html>
