@@ -25,16 +25,26 @@
         }
 
         .header > .name {
-            color: #3c91e6;
             margin-left: 1rem;
             font-size: 3rem;
             padding: 0.5rem 0;
         }
 
+        .header > .name > a {
+            text-decoration: none;
+            color: #3c91e6;
+        }
+
+        .header > .name > a:visited {
+            color: #3c91e6;
+        }
+
         .links {
             background-color: #3c91e6;
             text-align: right;
-            padding: 0.5rem;
+            padding: 0.75rem;
+            margin-left: -1rem;
+            margin-right: -1rem;
         }
 
         .links > .link {
@@ -54,7 +64,6 @@
 
         .content {
             padding: 1rem;
-            height: 100%;
         }
 
         .introduction {
@@ -97,7 +106,7 @@
     <div class="container">
         <div class="header">
             <div class="name">
-                <Link to="/">Jacob Kania</Link>
+                <a href="/">Jacob Kania</a>
             </div>
             <div class="links">
                 <span class="link"><a href="https://github.com/jacobkania">Github</a></span>
