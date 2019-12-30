@@ -1,2 +1,135 @@
-<div>This is above the body</div>
-<div id="body">{{.Body}}</div>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>Jacob Kania</title>
+    <style>
+        a {
+            color: #ee4266;
+            font-weight: 500;
+        }
+
+        .page {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #c6c5b9;
+            color: #413c58;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .container {
+            background-color: #f5f5f5;
+            height: 100%;
+        }
+
+        .header {
+            background-color: #f5f5f5;
+        }
+
+        .header > .name {
+            margin-left: 1rem;
+            font-size: 4rem;
+            padding: 1rem 0;
+        }
+
+        .header > .name > a {
+            text-decoration: none;
+            color: #3c91e6;
+        }
+
+        .header > .name > a:visited {
+            color: #3c91e6;
+        }
+
+        .links {
+            background-color: #3c91e6;
+            text-align: right;
+            padding: 0.75rem;
+            margin-left: -1rem;
+            margin-right: -1rem;
+        }
+
+        .links > .link {
+            margin-right: 1rem;
+            margin-left: 1rem;
+        }
+
+        .links > .link > a {
+            font-weight: 600;
+            text-decoration: none;
+            color: #f5f5f5;
+        }
+
+        .links > .link > a:visited {
+            color: #f5f5f5;
+        }
+
+        .content {
+            padding: 1rem;
+        }
+
+        .top-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            border-bottom: 0.25rem solid #dbc2cf;
+            padding-bottom: 1rem;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: 600;
+	        color: #ee4266;
+        }
+
+        .date {
+            font-size: 1rem;
+            font-family: monospace;
+        }
+        
+        @media (max-width: 600px) {
+            .top-container {
+                flex-wrap: wrap;
+            }
+
+            .title {
+                flex: 0 0 100%;
+            }
+
+            .date {
+                margin-top: 1rem;
+                flex: 0 0 100%;
+            }
+        }
+
+        .conclusion {
+            margin-top: 1rem;
+            text-align: center;
+            padding-top: 0.5rem;
+            border-top: 0.25rem solid #dbc2cf;
+        }
+    </style>
+
+</head>
+<body class="page">
+    <div class="container">
+        <div class="header">
+            <div class="name">
+                <a href="/">Jacob Kania</a>
+            </div>
+            <div class="links">
+                <span class="link"><a href="https://github.com/jacobkania">Github</a></span>
+                <span class="link"><a href="https://linkedin.com/in/jacobkania">LinkedIn</a></span>
+            </div>
+        </div>
+        <div class="content">
+            <div class="top-container">
+                <div class="title">{{.Meta.Title}}</div>
+                <div class="date">{{.Meta.PublishedDate}}</div>
+            </div>
+            <div class="body">{{.Body}}</div>
+            <div class="conclusion" id="conclusion">
+                © 2020 Jacob Kania
+            </div>
+        </div>
+    </div>
+
