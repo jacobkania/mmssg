@@ -14,30 +14,34 @@ import (
 
 // Entry is a blog post entry
 type Entry struct {
-	Body string
-	Meta map[string]interface{}
-	URL  string
+	Body    string
+	Meta    map[string]interface{}
+	URL     string
+	HomeURL string
 }
 
 // IndexData is a list of entries
 type IndexData struct {
 	Entries []Entry
+	HomeURL string
 }
 
 func handleErr(err *error, message string, doPanic bool) {
 	if *err != nil {
-		fmt.Println(message)
 		if doPanic {
+			fmt.Println("FATAL ERROR: \n" + message)
 			panic(message)
+		} else {
+			fmt.Println(message)
 		}
 	}
 }
 
-func parseMeta(content, fileName string) Entry {
+func parseMeta(content, fileName, URLBase string) Entry {
 	byLine := strings.Split(content, "\n")
 	// if there is no metadata, just return an Entry with the Body
 	if byLine[0] != "---" {
-		return Entry{string(blackfriday.Run([]byte(content))), nil, ""}
+		return Entry{string(blackfriday.Run([]byte(content))), nil, "/" + URLBase + fileName, "/" + URLBase}
 	}
 	// read off metadata
 	var entry Entry
@@ -66,7 +70,8 @@ func parseMeta(content, fileName string) Entry {
 	remainingText := strings.TrimSpace(strings.Join(byLine[indexCount:], "\n"))
 	entry.Body = string(blackfriday.Run([]byte(remainingText)))
 
-	entry.URL = "/" + fileName
+	entry.URL = "/" + URLBase + fileName
+	entry.HomeURL = "/" + URLBase
 
 	return entry
 }
@@ -99,6 +104,8 @@ func main() {
 	optionOutputDir := flag.String("o", "docs", "Output directory")
 	optionIndexTemplateFilename := flag.String("t", "index.html", "File to use for index template")
 	optionPageTemplateFilename := flag.String("p", "page.html", "File to use for page template")
+
+	optionPreURL := flag.String("u", "", "Leading url path after domain name to use for links")
 
 	flag.Parse()
 
@@ -143,13 +150,13 @@ func main() {
 
 		var outputPath string = outputLocation + strings.TrimSuffix(file.Name(), path.Ext(file.Name()))
 		var outputFileName string = fmt.Sprintf("%s/index.html", outputPath)
-		var outputURL string = fmt.Sprintf("%s/index.html", strings.TrimSuffix(file.Name(), path.Ext(file.Name())))
+		var outputURL string = fmt.Sprintf("%s", strings.TrimSuffix(file.Name(), path.Ext(file.Name())))
 
 		fmt.Printf("Processing file: %s\n", file.Name())
 		fileContents, err := ioutil.ReadFile(inputLocation + file.Name())
 		handleErr(&err, fmt.Sprintf("Failed to load: %v", file.Name()), true)
 
-		entry := parseMeta(string(fileContents), outputURL)
+		entry := parseMeta(string(fileContents), outputURL, *optionPreURL)
 		pages = append(pages, entry)
 
 		var generatedPage bytes.Buffer
@@ -167,7 +174,7 @@ func main() {
 	// parse contents into index from template
 
 	var generatedIndex bytes.Buffer
-	err = indexTemplate.Execute(&generatedIndex, IndexData{pages})
+	err = indexTemplate.Execute(&generatedIndex, IndexData{pages, "/" + *optionPreURL})
 	handleErr(&err, "Failed to parse index page", true)
 	err = ioutil.WriteFile(outputLocation+"index.html", generatedIndex.Bytes(), 0644)
 	handleErr(&err, fmt.Sprintf("Failed to write index file to: %v", outputLocation+"index.html"), true)
