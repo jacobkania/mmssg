@@ -160,7 +160,8 @@ func main() {
 		handleErr(&err, "Couldn't create the output directory", true)
 
 		writeLocation := outputFileName
-		ioutil.WriteFile(writeLocation, generatedPage.Bytes(), 0644)
+		err = ioutil.WriteFile(writeLocation, generatedPage.Bytes(), 0644)
+		handleErr(&err, fmt.Sprintf("Failed to write to page file to: %v", writeLocation), true)
 	}
 
 	// parse contents into index from template
@@ -168,5 +169,6 @@ func main() {
 	var generatedIndex bytes.Buffer
 	err = indexTemplate.Execute(&generatedIndex, IndexData{pages})
 	handleErr(&err, "Failed to parse index page", true)
-	ioutil.WriteFile(outputLocation+"index.html", generatedIndex.Bytes(), 0644)
+	err = ioutil.WriteFile(outputLocation+"index.html", generatedIndex.Bytes(), 0644)
+	handleErr(&err, fmt.Sprintf("Failed to write index file to: %v", outputLocation+"index.html"), true)
 }
