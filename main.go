@@ -143,7 +143,8 @@ func main() {
 	var pages []Entry
 
 	// parse contents into pages from template
-	for _, file := range inputFiles {
+	for i := len(inputFiles) - 1; i >= 0; i-- {
+		file := inputFiles[i]
 		if file.IsDir() {
 			continue
 		}
