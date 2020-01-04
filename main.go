@@ -115,6 +115,10 @@ func main() {
 	indexTemplateLocation := parseDirectoryFromUserInput(*optionIndexTemplateFilename, true)
 	pageTemplateLocation := parseDirectoryFromUserInput(*optionPageTemplateFilename, true)
 
+	if *optionPreURL != "" {
+		*optionPreURL += "/"
+	}
+
 	fmt.Printf("Read posts from directory: %s\n", inputLocation)
 	fmt.Printf("Output posts to directory: %s\n", outputLocation)
 
@@ -157,7 +161,7 @@ func main() {
 		fileContents, err := ioutil.ReadFile(inputLocation + file.Name())
 		handleErr(&err, fmt.Sprintf("Failed to load: %v", file.Name()), true)
 
-		entry := parseMeta(string(fileContents), outputURL, *optionPreURL+"/")
+		entry := parseMeta(string(fileContents), outputURL, *optionPreURL)
 		pages = append(pages, entry)
 
 		var generatedPage bytes.Buffer
@@ -175,7 +179,7 @@ func main() {
 	// parse contents into index from template
 
 	var generatedIndex bytes.Buffer
-	err = indexTemplate.Execute(&generatedIndex, IndexData{pages, "/" + *optionPreURL + "/"})
+	err = indexTemplate.Execute(&generatedIndex, IndexData{pages, "/" + *optionPreURL})
 	handleErr(&err, "Failed to parse index page", true)
 	err = ioutil.WriteFile(outputLocation+"index.html", generatedIndex.Bytes(), 0644)
 	handleErr(&err, fmt.Sprintf("Failed to write index file to: %v", outputLocation+"index.html"), true)
