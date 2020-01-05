@@ -25,15 +25,3 @@ Header 1 | Header 2
 Thing 1  | Thing 2
 Thing 3  | Thing 4
 ```
-
-You can also make footnote references [^1]
-
-[^1]: and link them on the bottom!
-
-Footnotes look like:
-
-```markdown
-You can also make footnote references [^1]
-
-[^1]: and link them on the bottom!
-```
