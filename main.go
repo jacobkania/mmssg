@@ -8,16 +8,18 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"sort"
 	"strings"
 	"text/template"
 )
 
 // Entry is a blog post entry
 type Entry struct {
-	Body    string
-	Meta    map[string]interface{}
-	URL     string
-	HomeURL string
+	Body             string
+	Meta             map[string]string
+	URL              string
+	HomeURL          string
+	OriginalFilename string
 }
 
 // IndexData is a list of entries
@@ -37,15 +39,15 @@ func handleErr(err *error, message string, doPanic bool) {
 	}
 }
 
-func parseMeta(content, fileName, URLBase string) Entry {
+func parseMeta(content, outputFileURL, originalFilename, URLBase string) Entry {
 	byLine := strings.Split(content, "\n")
 	// if there is no metadata, just return an Entry with the Body
 	if byLine[0] != "---" {
-		return Entry{string(blackfriday.Run([]byte(content))), nil, "/" + URLBase + fileName, "/" + URLBase}
+		return Entry{string(blackfriday.Run([]byte(content))), nil, "/" + URLBase + outputFileURL, "/" + URLBase, originalFilename}
 	}
 	// read off metadata
 	var entry Entry
-	entry.Meta = make(map[string]interface{})
+	entry.Meta = make(map[string]string)
 
 	var indexCount int = 0
 	for index, line := range byLine {
@@ -70,8 +72,9 @@ func parseMeta(content, fileName, URLBase string) Entry {
 	remainingText := strings.TrimSpace(strings.Join(byLine[indexCount:], "\n"))
 	entry.Body = string(blackfriday.Run([]byte(remainingText)))
 
-	entry.URL = "/" + URLBase + fileName
+	entry.URL = "/" + URLBase + outputFileURL
 	entry.HomeURL = "/" + URLBase
+	entry.OriginalFilename = originalFilename
 
 	return entry
 }
@@ -143,30 +146,38 @@ func main() {
 	pageTemplate, err := template.New("page").Parse(string(pageContents))
 	handleErr(&err, "Couldn't parse the page template file", true)
 
-	// initialize metadata to use for index page
+	// extract entries from files
 	var pages []Entry
 
-	// parse contents into pages from template
 	for i := len(inputFiles) - 1; i >= 0; i-- {
 		file := inputFiles[i]
 		if file.IsDir() {
 			continue
 		}
 
-		var outputPath string = outputLocation + strings.TrimSuffix(file.Name(), path.Ext(file.Name()))
-		var outputFileName string = fmt.Sprintf("%s/index.html", outputPath)
 		var outputURL string = fmt.Sprintf("%s", strings.TrimSuffix(file.Name(), path.Ext(file.Name())))
 
 		fmt.Printf("Processing file: %s\n", file.Name())
 		fileContents, err := ioutil.ReadFile(inputLocation + file.Name())
 		handleErr(&err, fmt.Sprintf("Failed to load: %v", file.Name()), true)
 
-		entry := parseMeta(string(fileContents), outputURL, *optionPreURL)
+		entry := parseMeta(string(fileContents), outputURL, file.Name(), *optionPreURL)
 		pages = append(pages, entry)
+	}
+
+	// sort entries by published date
+	sort.Slice(pages, func(i, j int) bool {
+		return pages[i].Meta["PublishedDate"] > pages[j].Meta["PublishedDate"]
+	})
+
+	// parse contents into pages from template
+	for _, entry := range pages {
+		var outputPath string = outputLocation + strings.TrimSuffix(entry.OriginalFilename, path.Ext(entry.OriginalFilename))
+		var outputFileName string = fmt.Sprintf("%s/index.html", outputPath)
 
 		var generatedPage bytes.Buffer
 		err = pageTemplate.Execute(&generatedPage, entry)
-		handleErr(&err, fmt.Sprintf("Failed to parse into template: %v", file.Name()), true)
+		handleErr(&err, fmt.Sprintf("Failed to parse into template: %v", entry.OriginalFilename), true)
 
 		err = os.MkdirAll(outputPath, os.ModePerm)
 		handleErr(&err, "Couldn't create the output directory", true)
