@@ -28,7 +28,7 @@ Using Git, push up your changes to your github repo. Go to the 'Settings' tab wi
 That's it! Your site is published.
 
 # Command flags
-* `-i` Input directory
+* `-i` Input directory (default "./")
 * `-o` Output directory (default "docs")
 * `-p` File to use for page template (default "page.html")
 * `-t` File to use for index template (default "index.html")
