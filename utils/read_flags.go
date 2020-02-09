@@ -17,6 +17,10 @@ func ReadFlags() model.Flags {
 
 	flag.Parse()
 
+	if *optionPreURL != "" {
+		*optionPreURL += "/"
+	}
+
 	return model.Flags{
 		*optionInputDir,
 		*optionOutputDir,

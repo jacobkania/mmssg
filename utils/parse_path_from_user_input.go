@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"github.com/jacobkania/mmssg/errors"
 	"os"
 )
 
@@ -10,7 +11,7 @@ import (
  */
 func ParsePathFromUserInput(userInput string, isFile bool) string {
 	pwd, err := os.Getwd()
-	HandleErr(&err, "Couldn't get current working directory", true)
+	errors.HandleErr(&err, "Couldn't get current working directory", true)
 
 	pwd += "/"
 	if !isFile {
