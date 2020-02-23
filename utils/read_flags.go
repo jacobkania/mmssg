@@ -15,6 +15,8 @@ func ReadFlags() model.Flags {
 
 	optionPreURL := flag.String("u", "", "Leading url path after domain name to use for links")
 
+	optionPluginDir := flag.String("x", "plugins", "Directory that contains plugins, if you choose to use them")
+
 	flag.Parse()
 
 	if *optionPreURL != "" {
@@ -27,5 +29,6 @@ func ReadFlags() model.Flags {
 		*optionIndexTemplateFilename,
 		*optionPageTemplateFilename,
 		*optionPreURL,
+		*optionPluginDir,
 	}
 }

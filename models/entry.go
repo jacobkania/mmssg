@@ -4,6 +4,7 @@ package models
 type Entry struct {
 	Body             string
 	Meta             map[string]string
+	Plugins          map[string]interface{}
 	URL              string
 	HomeURL          string
 	OriginalFilename string
