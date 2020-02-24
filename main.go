@@ -41,7 +41,7 @@ func main() {
 	inputFiles, err := ioutil.ReadDir(inputLocation)
 	errors.HandleErr(&err, fmt.Sprintf("Couldn't read the input files from %v", inputLocation), true)
 
-	//
+	// do the data processing stuff
 
 	var pages []model.Entry = filehandling.ExtractEntries(inputFiles, inputLocation, flags.PreURL)
 
