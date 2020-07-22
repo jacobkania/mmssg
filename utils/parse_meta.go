@@ -16,7 +16,7 @@ func ParseMeta(content, outputFileURL, originalFilename, URLBase string) model.E
 	byLine := strings.Split(content, "\n")
 	// if there is no metadata, just return an Entry with the Body
 	if byLine[0] != "---" {
-		return model.Entry{string(blackfriday.Run([]byte(content))), nil, nil, "/" + URLBase + outputFileURL, "/" + URLBase, originalFilename}
+		return model.Entry{string(blackfriday.Run([]byte(content))), nil, "/" + URLBase + outputFileURL, "/" + URLBase, originalFilename}
 	}
 	// read off metadata
 	var entry model.Entry

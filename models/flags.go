@@ -7,5 +7,4 @@ type Flags struct {
 	IndexTemplateFilename string
 	PageTemplateFilename  string
 	PreURL                string
-	PluginDir             string
 }

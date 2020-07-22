@@ -19,17 +19,14 @@ func main() {
 	fmt.Println("Original source can be found at: https://github.com/jacobkania/mmssg")
 	fmt.Println("#################\n")
 
-	// get locations from user flags
+	// get locations and read list of files
 	inputLocation := utils.ParsePathFromUserInput(flags.InputDir, false)
 	outputLocation := utils.ParsePathFromUserInput(flags.OutputDir, false)
 	indexTemplateLocation := utils.ParsePathFromUserInput(flags.IndexTemplateFilename, true)
 	pageTemplateLocation := utils.ParsePathFromUserInput(flags.PageTemplateFilename, true)
 
-	pluginLocation := utils.ParsePathFromUserInput(flags.PluginDir, false)
-
 	fmt.Printf("Read posts from directory: %s\n", inputLocation)
 	fmt.Printf("Output posts to directory: %s\n", outputLocation)
-	fmt.Printf("---------------\n")
 
 	if _, err := os.Stat(outputLocation); err != nil {
 		fmt.Printf("Note: Output directory does not exist. Creating now...\n")
@@ -41,11 +38,9 @@ func main() {
 	inputFiles, err := ioutil.ReadDir(inputLocation)
 	errors.HandleErr(&err, fmt.Sprintf("Couldn't read the input files from %v", inputLocation), true)
 
-	// do the data processing stuff
+	//
 
 	var pages []model.Entry = filehandling.ExtractEntries(inputFiles, inputLocation, flags.PreURL)
-
-	filehandling.ProcessPlugins(pages, pluginLocation)
 
 	filehandling.WritePages(pages, outputLocation, pageTemplateLocation)
 
